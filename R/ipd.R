@@ -268,26 +268,31 @@ ipd <- function(
     alpha = 0.05,
     alternative = "two-sided",
     na_action = "na.fail",
-    ...) {
-
+    ...
+) {
     #- Implemented Methods and Models
 
-    valid_methods <- c("chen", "postpi_analytic", "postpi_boot", "ppi",
+    valid_methods <- c(
+        "chen",
+        "postpi_analytic",
+        "postpi_boot",
+        "ppi",
+        "ppi_a",
+        "ppi_plusplus",
+        "pspa"
+    )
 
-        "ppi_a", "ppi_plusplus", "pspa")
-
-    valid_models <- c("mean", "quantile", "ols", "logistic", "poisson")
+    valid_models <- c("mean", "quantile", "ols", "logistic", "poisson", 'irt')
 
     #- Identify Factor Variables in the Formula
 
-    all_vars    <- all.vars(formula)
-    preds       <- all_vars[-c(1,2)]
+    all_vars <- all.vars(formula)
+    preds <- all_vars[-c(1, 2)]
     factor_vars <- intersect(preds, names(Filter(is.factor, data)))
 
     #- Drop Unused Levels if Stacked Data
 
     if (!is.null(label) && is.null(unlabeled_data)) {
-
         data <- .drop_unused_levels(data, factor_vars)
     }
 
@@ -307,7 +312,7 @@ ipd <- function(
 
     method <- match.arg(method, valid_methods)
 
-    model  <- match.arg(model,  valid_models)
+    model <- match.arg(model, valid_models)
 
     helper <- get(paste(method, model, sep = "_"))
 
@@ -316,8 +321,8 @@ ipd <- function(
     #- Results
 
     est <- as.numeric(fit$est)
-    se  <- as.numeric(fit$se)
-    nm  <- colnames(mats$X_u)
+    se <- as.numeric(fit$se)
+    nm <- colnames(mats$X_u)
 
     names(est) <- names(se) <- nm
 
@@ -330,27 +335,28 @@ ipd <- function(
     pval <- 2 * pnorm(-abs(zval))
 
     coef_tab <- data.frame(
-        Estimate     = est,
+        Estimate = est,
         `Std. Error` = se,
-        `z value`    = zval,
-        `Pr(>|z|)`   = pval,
-        row.names    = nm,
-        check.names  = FALSE
+        `z value` = zval,
+        `Pr(>|z|)` = pval,
+        row.names = nm,
+        check.names = FALSE
     )
 
     #- Return
 
-    new("ipd",
+    new(
+        "ipd",
         coefficients = est,
-        se           = se,
-        ci           = ci_mat,
-        coefTable    = coef_tab,
-        fit          = fit,
-        formula      = formula,
-        data_l       = inp$data_l,
-        data_u       = inp$data_u,
-        method       = method,
-        model        = model,
-        intercept    = intercept
+        se = se,
+        ci = ci_mat,
+        coefTable = coef_tab,
+        fit = fit,
+        formula = formula,
+        data_l = inp$data_l,
+        data_u = inp$data_u,
+        method = method,
+        model = model,
+        intercept = intercept
     )
 }
